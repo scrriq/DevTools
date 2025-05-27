@@ -113,3 +113,40 @@ void ProjectManager::loadFromFile(const QString &filePath) {
     endResetModel();
     file.close();
 }
+QVariantMap ProjectManager::getById(const QString &id) const {
+    for (const Project &project : m_projects) {
+        if (project.id == id) {
+            QVariantMap map;
+            map["id"] = project.id;
+            map["name"] = project.name;
+            map["status"] = project.status;
+            map["startDate"] = project.startDate;
+            map["endDate"] = project.endDate;
+            return map;
+        }
+    }
+    return QVariantMap();
+}
+
+void ProjectManager::updateStatus(const QString &id, const QString &newStatus) {
+    for (int i = 0; i < m_projects.size(); ++i) {
+        if (m_projects[i].id == id) {
+            m_projects[i].status = newStatus;
+
+            QModelIndex index = createIndex(i, 0);
+            emit dataChanged(index, index, {StatusRole});
+            return;
+        }
+    }
+}
+void ProjectManager::removeProject(const QString &id) {
+    for (int row = 0; row < m_projects.size(); ++row) {
+        if (m_projects[row].id == id) {
+            beginRemoveRows(QModelIndex(), row, row);
+            m_projects.removeAt(row);
+            endRemoveRows();
+            return;
+        }
+    }
+}
+

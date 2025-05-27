@@ -8,6 +8,10 @@ ApplicationWindow {
     visible: true
     width: 1024; height: 768
     title: "DevTools"
+    Component.onCompleted: {
+        projectManager.loadFromFile("projects.txt")
+        taskManager.loadFromFile("tasks.txt")
+    }
 
     Material.theme: Material.Dark
 
@@ -22,7 +26,7 @@ ApplicationWindow {
 
 
         // Объявляем сразу нужные компоненты
-        Component { id: projectsComponent; ProjectPage {} }
+        Component { id: projectsComponent; ProjectPage {stackView: stack} }
         Component { id: tasksComponent;    TaskPage {} }
         Component { id: gradientComponent; GradientPage {} }
         Component { id: codeToolsComponent; CodeToolsPage {} }

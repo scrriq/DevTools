@@ -5,9 +5,12 @@ import QtQuick.Controls.Material 2.15
 
 Page {
     id: projectsPage
-    Component.onCompleted: {
-        projectManager.loadFromFile("projects.txt")
+    Component {
+        id: detailPageComponent
+        ProjectDetailPage { stackView: projectsPage.stackView }
     }
+    property StackView stackView
+
 
     header: ToolBar {
         width: parent.width
@@ -55,10 +58,15 @@ Page {
             Layout.fillHeight: true
 
             delegate: ProjectCard {
+                projectId: id
                 projectName: name
                 projectState: status
                 projectStartDate: startDate
                 projectEndDate: endDate
+                onClicked: function(projectId) {
+                    let page = detailPageComponent.createObject(stackView, { stackView: stackView, projectId: projectId })
+                    stackView.push(page)
+                }
             }
         }
     }
@@ -69,7 +77,10 @@ Page {
         modal: true
         title: "Create Project"
         standardButtons: Dialog.Ok | Dialog.Cancel
+        x: (parent.width  - width ) / 2
+        y: (parent.height - height) / 2
 
+        property bool isNameValid: nameField.text.trim().length > 0
         ColumnLayout {
             anchors.fill: parent
             spacing: 12
@@ -78,6 +89,7 @@ Page {
                 id: nameField
                 placeholderText: "Project name"
                 Layout.fillWidth: true
+                onTextChanged: dialog.isNameValid = text.trim().length > 0
             }
 
             ComboBox {
@@ -99,6 +111,7 @@ Page {
         }
 
         onAccepted: {
+            if (!isNameValid) return;
             projectManager.createProject(
                 nameField.text,
                 stateCombo.currentText,

@@ -10,6 +10,7 @@ class ProjectManager : public QAbstractListModel
 {
     Q_OBJECT
 
+
 public:
     enum ProjectRoles {
         IdRole = Qt::UserRole + 1,
@@ -33,6 +34,10 @@ public:
 
     Q_INVOKABLE void saveToFile(const QString &filePath) const;
     Q_INVOKABLE void loadFromFile(const QString &filePath);
+    Q_INVOKABLE QVariantMap getById(const QString &id) const;
+    Q_INVOKABLE void updateStatus(const QString &id, const QString &newStatus);
+    Q_INVOKABLE void removeProject(const QString &id);
+
 
 private:
     QList<Project> m_projects;

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 2.15
+import QtQuick.Controls.Material 2.15
 
 
 Item {
@@ -8,10 +9,13 @@ Item {
     width: ListView.view ? ListView.view.width : 300
     height: 100
 
+    property string projectId
     property string projectName
     property string projectState
     property string projectStartDate
     property string projectEndDate
+
+    signal clicked(string projectId)
 
     Rectangle {
         anchors.fill: parent
@@ -21,6 +25,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
+            onClicked: root.clicked(root.projectId)
         }
 
         RowLayout {
@@ -44,7 +49,7 @@ Item {
 
             // Даты (2/4 ширины)
             Column {
-                Layout.preferredWidth: parent.width * 0.5 // 50%
+                Layout.preferredWidth: parent.width * 0.5 // 40%
                 Layout.alignment: Qt.AlignCenter
 
                 Text {
@@ -60,7 +65,6 @@ Item {
                 }
             }
 
-            // Статус (1/4 ширины)
             RowLayout {
                 spacing: 8
                 Layout.preferredWidth: parent.width * 0.25 // 25%
@@ -80,16 +84,49 @@ Item {
                 }
 
                 Text {
-                    text: {
-                        if (projectState === "NotStated") return "Не начат";
-                        if (projectState === "Backlog") return "В очереди";
-                        if (projectState === "InProgress") return "В процессе";
-                        if (projectState === "Waiting") return "Ожидание";
-                        return "Неизвестно";
-                    }
+                    text: projectState
                     color: "white"
                     font.pixelSize: 14
                     elide: Text.ElideRight
+                }
+            }
+            Button {
+                id: deleteBtn
+                text: "X"
+                flat: true
+                font.pixelSize: 50
+                contentItem: Text {
+                    text: deleteBtn.text
+                    font.pixelSize: 18
+                    color: "#E0115F"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                width: 32; height: 32
+                onClicked: confirmDelete.open()  // открываем диалог
+            }
+            Dialog {
+                id: confirmDelete
+                title: "Подтвердите удаление"
+                modal: true
+                width: 300
+                x: (parent.width  - width ) / 2
+                y: (parent.height - height) / 2
+                standardButtons: Dialog.Yes | Dialog.No
+                // тело диалога
+                contentItem: Text {
+                    text: "Удалить проект «" + projectName + "»?"
+                    wrapMode: Text.WordWrap
+                    anchors {
+                        left: parent.left; right: parent.right
+                        margins: 16
+                    }
+                }
+                onAccepted: {
+                    projectManager.removeProject(projectId)
+                    projectManager.saveToFile("projects.txt")
+                    taskManager.removeTasksByProject(projectId)
+                    taskManager.saveToFile("tasks.txt")
                 }
             }
         }

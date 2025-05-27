@@ -33,10 +33,14 @@ qt_add_qml_module(appDevTools
         QML_FILES AccountPage.qml
         QML_FILES CustomDatePicker.qml
         QML_FILES ProjectCard.qml
+        QML_FILES ProjectDetailPage.qml
         RESOURCES resources.qrc
         SOURCES devtools.h
         SOURCES Project.cpp
         SOURCES devtools.cpp
+        SOURCES TaskManager.h TaskManager.cpp
+        SOURCES Task.h
+        QML_FILES TaskCard.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
