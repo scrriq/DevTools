@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/qml/DevTools">
+        <file>Main.qml</file>
+        <file>Header.qml</file>
+        <file>GradientPage.qml</file>
+        <file>CodeToolsPage.qml</file>
+        <file>AccountPage.qml</file>
+        <file>ProjectPage.qml</file>
+        <file>TaskPage.qml</file>
+        <file>CustomDatePicker.qml</file>
+        <file>ProjectCard.qml</file>
+    </qresource>
+</RCC>
