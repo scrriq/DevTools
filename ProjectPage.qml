@@ -48,6 +48,16 @@ Page {
             margins: 16
         }
         spacing: 12
+        Text {
+            visible: listView.count === 0
+            text: "Список проектов пуст"
+            color: "red"
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignHCenter
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+        }
+
 
         ListView {
             id: listView
