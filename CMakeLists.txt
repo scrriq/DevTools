@@ -22,7 +22,7 @@ qt_add_qml_module(appDevTools
         SOURCES
         QML_FILES ProjectPage.qml
         SOURCES
-        SOURCES gradientmodel.h gradientmodel.cpp
+        SOURCES GradientModel.h GradientModel.cpp
         SOURCES ProjectManager.h ProjectManager.cpp
         SOURCES
         QML_FILES Header.qml

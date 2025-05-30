@@ -101,7 +101,6 @@ void ProjectManager::loadFromFile(const QString &filePath) {
 
         QStringList parts = line.split(",");
         if (parts.size() == 5) {
-            // Просто подставляем то, что сохранили
             const QString &startDate = parts[3];
             const QString &endDate   = parts[4];
 
