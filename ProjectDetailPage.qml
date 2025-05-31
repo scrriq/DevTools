@@ -9,12 +9,18 @@ Page {
     property StackView stackView
     property string projectId: ""
     signal goBack()
+    property bool isNameValid: taskName.text.trim().length > 0
+    property bool isDateRangeValid: parseDate(taskStart.selectedDate) <= parseDate(taskEnd.selectedDate)
 
+    function parseDate(dateStr) {
+        var parts = dateStr.split(".")
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10))
+    }
 
     TaskManager {
         id: taskModel
         currentProjectId: projectId
-        Component.onCompleted: loadFromFile("tasks.txt")
+        Component.onCompleted: loadFromFile()
     }
 
 
@@ -42,7 +48,6 @@ Page {
         anchors.margins: 16
         spacing: 12
 
-        // Информация о проекте
         Rectangle {
             color: "#0A194A"; radius: 8
             Layout.fillWidth: true; Layout.preferredHeight: 100
@@ -56,7 +61,7 @@ Page {
                     currentIndex: model.indexOf(projectManager.getById(projectId).status)
                     onCurrentTextChanged: {
                         projectManager.updateStatus(projectId, currentText)
-                        projectManager.saveToFile("projects.txt")
+                        projectManager.saveToFile()
                     }
                 }
                 Text {
@@ -72,27 +77,42 @@ Page {
             }
         }
 
+        Text {
+            id: errorText
+            text: {
+                if (!isNameValid) {
+                    return "Ошибка: имя проекта не может быть пустым."
+                } else if (!isDateRangeValid) {
+                    return "Ошибка: дата начала не может быть позже даты окончания."
+                }
+                return ""
+            }
+            color: "red"
+            visible: false
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
 
-        // Список задач
         ListView {
             model: taskModel
             spacing: 20
+
             delegate: TaskCard {
                 taskId: id
                 taskName: name
                 taskState: status
                 taskStartDate: startDate
                 taskEndDate: endDate
+                page: detailPage
                 onStatusChanged: (newState) => {
                     taskModel.toggleStatus(taskId, newState)
-                    taskModel.saveToFile("tasks.txt")
+                    taskModel.saveToFile()
                 }
             }
             Layout.fillWidth: true; Layout.fillHeight: true
         }
     }
 
-    // Диалог создания задачи
     Dialog {
         id: taskDialog
         title: "Новая Задача"
@@ -108,19 +128,28 @@ Page {
             CustomDatePicker { id: taskEnd;Layout.fillWidth: true }
         }
         onAccepted: {
-            if (taskName.text.trim() === "") {
-                return;
+            isNameValid = taskName.text.trim().length > 0
+            isDateRangeValid = parseDate(taskStart.selectedDate) <= parseDate(taskEnd.selectedDate)
+
+            if (!isNameValid || !isDateRangeValid) {
+                errorText.visible = true
+                return
             }
+
             taskModel.createTask(
                 projectId,
-                taskName.text,
+                taskName.text.trim(),
                 taskState.currentText,
                 taskStart.selectedDate,
                 taskEnd.selectedDate
             )
-            taskModel.saveToFile("tasks.txt")
+            taskModel.saveToFile()
+
             taskName.text = ""
-            taskModel.setProjectFilter(projectId)
+            taskState.currentIndex = 0
+            taskStart.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+            taskEnd.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+            errorText.visible = false
         }
     }
 }

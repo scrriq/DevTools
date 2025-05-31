@@ -10,6 +10,13 @@ Page {
         ProjectDetailPage { stackView: projectsPage.stackView }
     }
     property StackView stackView
+    property bool isNameValid: nameField.text.trim().length > 0
+    property bool isDateRangeValid: parseDate(startDatePicker.selectedDate) <= parseDate(endDatePicker.selectedDate)
+
+    function parseDate(dateStr) {
+        var parts = dateStr.split(".")
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10))
+    }
 
 
     header: ToolBar {
@@ -57,6 +64,21 @@ Page {
             Layout.alignment: Qt.AlignHCenter
             Layout.fillWidth: true
         }
+        Text {
+            id: errorText
+            text: {
+                if (!dialog.isNameValid) {
+                    return "Ошибка: имя проекта не может быть пустым."
+                } else if (!dialog.isDateRangeValid) {
+                    return "Ошибка: дата начала не может быть позже даты окончания."
+                }
+                return ""
+            }
+            color: "red"
+            visible: false
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
 
 
         ListView {
@@ -80,6 +102,8 @@ Page {
             }
         }
     }
+
+
 
     Dialog {
         id: dialog
@@ -120,16 +144,30 @@ Page {
             }
         }
 
-        onAccepted: {
-            if (!isNameValid) return;
-            projectManager.createProject(
-                nameField.text,
-                stateCombo.currentText,
-                startDatePicker.selectedDate,
-                endDatePicker.selectedDate
-            )
-            projectManager.saveToFile("projects.txt")
-            nameField.text = ""
-        }
+         onAccepted: {
+             isNameValid = nameField.text.trim().length > 0
+             isDateRangeValid = parseDate(startDatePicker.selectedDate) <= parseDate(endDatePicker.selectedDate)
+
+             if (!isNameValid || !isDateRangeValid) {
+                 errorText.visible = true
+                 return
+             }
+
+             projectManager.createProject(
+                 nameField.text.trim(),
+                 stateCombo.currentText,
+                 startDatePicker.selectedDate,
+                 endDatePicker.selectedDate
+             )
+             projectManager.saveToFile()
+
+             nameField.text = ""
+             stateCombo.currentIndex = 0
+             startDatePicker.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+             endDatePicker.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+             errorText.visible = false
+
+             dialog.close()
+         }
     }
 }

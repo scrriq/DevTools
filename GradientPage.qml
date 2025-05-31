@@ -147,16 +147,12 @@ Page {
                             // проверяем, что пользователь ввёл корректный #RGB или #RRGGBB
                             var m = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.exec(text)
                             if (m) {
-                                // Qt.color() вернёт QColor или undefined, но мы уже гарантировали формат
                                 var c = Qt.color(text)
                                 if (c !== undefined) {
                                     gradientModel.updateStop(index, c, model.stopPosition)
-                                } else {
-                                    // на всякий случай
                                     text = model.stopColor
                                 }
                             } else {
-                                // неверный ввод — возвращаем старое значение
                                 text = model.stopColor
                             }
                         }

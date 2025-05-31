@@ -33,7 +33,6 @@ Item {
             anchors.margins: 16
             spacing: 10
 
-            // Название проекта (1/4 ширины)
             Text {
                 text: projectName
                 font {
@@ -43,13 +42,12 @@ Item {
                 }
                 color: "white"
                 elide: Text.ElideRight
-                Layout.preferredWidth: parent.width * 0.25 // 25%
+                Layout.preferredWidth: parent.width * 0.25
                 Layout.maximumWidth: parent.width * 0.25
             }
 
-            // Даты (2/4 ширины)
             Column {
-                Layout.preferredWidth: parent.width * 0.5 // 40%
+                Layout.preferredWidth: parent.width * 0.5
                 Layout.alignment: Qt.AlignCenter
 
                 Text {
@@ -67,7 +65,7 @@ Item {
 
             RowLayout {
                 spacing: 8
-                Layout.preferredWidth: parent.width * 0.25 // 25%
+                Layout.preferredWidth: parent.width * 0.25
                 Layout.alignment: Qt.AlignRight
 
                 Rectangle {
@@ -103,7 +101,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                 }
                 width: 32; height: 32
-                onClicked: confirmDelete.open()  // открываем диалог
+                onClicked: confirmDelete.open()
             }
             Dialog {
                 id: confirmDelete
@@ -114,6 +112,8 @@ Item {
                 y: (parent.height - height) / 2
                 standardButtons: Dialog.Yes | Dialog.No
                 // тело диалога
+                parent: projectsPage
+                anchors.centerIn: projectsPage
                 contentItem: Text {
                     text: "Удалить проект «" + projectName + "»?"
                     wrapMode: Text.WordWrap
@@ -124,9 +124,9 @@ Item {
                 }
                 onAccepted: {
                     projectManager.removeProject(projectId)
-                    projectManager.saveToFile("projects.txt")
+                    projectManager.saveToFile()
                     taskManager.removeTasksByProject(projectId)
-                    taskManager.saveToFile("tasks.txt")
+                    taskManager.saveToFile()
                 }
             }
         }

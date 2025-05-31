@@ -5,10 +5,11 @@
     import DevTools 1.0
 
     Item {
-        id: root
         width: ListView.view ? ListView.view.width : 300
         height: 80
 
+        property Item page
+        property var taskManager
         property string taskId
         property string taskName
         property string taskState
@@ -18,6 +19,7 @@
         signal statusChanged(string newState)
 
         Rectangle {
+            id: task
             anchors.fill: parent
             radius: 10; color: "#04361C"
             RowLayout {
@@ -31,7 +33,6 @@
                     Layout.preferredWidth: parent.width * 0.2
                 }
 
-                // Даты
                 Text {
                     text: taskStartDate + " — " + taskEndDate
                     font.pixelSize: 12; color: "#CFCFCF"
@@ -40,7 +41,6 @@
                     Layout.preferredWidth: parent.width * 0.2
                 }
 
-                // ComboBox для ручного выбора статуса
                 ComboBox {
                     id: statusCombo
                     model: ["NotStated","Backlog","InProgress","Waiting"]
@@ -50,7 +50,6 @@
                     Layout.preferredWidth: parent.width * 0.2
                 }
 
-                // CheckBox: при установке → Waiting
                 CheckBox {
                     checked: taskState === "Waiting"
                     text: ""
@@ -85,10 +84,9 @@
                     title: "Подтвердите удаление"
                     modal: true
                     width: 350
-                    x: (parent.width  - width ) / 2
-                    y: (parent.height - height) / 2
+                    parent: page
+                    anchors.centerIn: page
                     standardButtons: Dialog.Yes | Dialog.No
-                    // тело диалога
                     contentItem: Text {
                         text: "Удалить проект «" + taskName + "»?"
                         wrapMode: Text.WordWrap
@@ -97,9 +95,10 @@
                             margins: 16
                         }
                     }
+
                     onAccepted: {
                         taskManager.removeTask(taskId)
-                        taskManager.saveToFile("tasks.txt")
+                        taskManager.saveToFile()
                     }
                 }
             }

@@ -6,11 +6,17 @@ import DevTools 1.0
 
 Page {
     id: taskPage
+    property bool isNameValid: nameField.text.trim().length > 0
+    property bool isDateRangeValid: parseDate(startDatePicker.selectedDate) <= parseDate(endDatePicker.selectedDate)
+    function parseDate(dateStr) {
+        var parts = dateStr.split(".")
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10))
+    }
 
     TaskManager {
         id: taskModel
         Component.onCompleted: {
-            loadFromFile("tasks.txt");
+            loadFromFile();
             setProjectFilter("");
         }
     }
@@ -54,49 +60,47 @@ Page {
             visible: listView.count === 0
             Layout.fillWidth: true
         }
-        ListView {
-            id: listView
-            model: taskModel
-            spacing: 8
-            clip: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            delegate: Rectangle {
-                x: 16
-                width: listView.width - 32
-                height: 70
-                radius: 6
-                color: "#04361C"
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 16
-
-                    Text { text: name; font.pixelSize: 16; color: "white"; elide: Text.ElideRight; Layout.preferredWidth: parent.width * 0.2; Layout.alignment: Qt.AlignVCenter }
-                    Text { text: projectManager.getById(projectId).name ? projectManager.getById(projectId).name : "-"; font.pixelSize: 14; color: "#CFCFCF"; elide: Text.ElideRight; Layout.preferredWidth: parent.width * 0.2; Layout.alignment: Qt.AlignVCenter }
-                    Text { text: startDate + " — " + endDate; font.pixelSize: 14; color: "#CFCFCF"; elide: Text.ElideRight; Layout.preferredWidth: parent.width * 0.2; Layout.alignment: Qt.AlignVCenter }
-                    ComboBox { model: ["NotStated","Backlog","InProgress","Waiting"]; currentIndex: model.indexOf(status); onCurrentTextChanged: { taskModel.toggleStatus(id, currentText); taskModel.saveToFile("tasks.txt"); } Layout.preferredWidth: parent.width * 0.2; Layout.alignment: Qt.AlignVCenter }
-                    Button { text: "X"; flat: true; font.pixelSize: 16; width: 24; height: 24; Layout.alignment: Qt.AlignVCenter; onClicked: deleteDialog.open() }
-
-                    Dialog {
-                        id: deleteDialog
-                        modal: true
-                        title: "Confirm Deletion"
-                        standardButtons: Dialog.Yes | Dialog.No
-                        width: 300
-                        x: (taskPage.width - width)/2; y: (taskPage.height - height)/2
-                        onAccepted: { taskModel.removeTask(id); taskModel.saveToFile("tasks.txt"); }
-                        Text { text: "Delete task \"" + name + "\"?"; wrapMode: Text.WordWrap; anchors.centerIn: parent }
-                    }
+        Text {
+            id: errorText
+            text: {
+                if (!isNameValid) {
+                    return "Ошибка: имя проекта не может быть пустым."
+                } else if (!isDateRangeValid) {
+                    return "Ошибка: дата начала не может быть позже даты окончания."
                 }
+                return ""
             }
+            color: "red"
+            visible: false
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
         }
+        ListView {
+               id: listView
+               model: taskModel
+               spacing: 8
+               clip: true
+               Layout.fillWidth: true
+               Layout.fillHeight: true
+
+               delegate: TaskCard {
+
+                  page: taskPage
+                  taskManager: taskModel
+                   taskId: id
+                   taskName: name
+                   taskState: status
+                   taskStartDate: startDate
+                   taskEndDate: endDate
+
+                   onStatusChanged: (newState) => {
+                       taskModel.toggleStatus(taskId, newState)
+                       taskModel.saveToFile()
+                   }
+               }
+           }
     }
 
-    // Dialog to create a task
     Dialog {
         id: taskDialog
         modal: true
@@ -108,20 +112,57 @@ Page {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 16
-            anchors.centerIn: parent
-            spacing: 8
+            spacing: 12
 
-            TextField { id: nameField; placeholderText: "Task name"; Layout.fillWidth: true }
-            ComboBox { id: stateCombo; model: ["NotStated","Backlog","InProgress","Waiting"]; currentIndex: 0; Layout.fillWidth: true }
-            CustomDatePicker { id: startPicker; Layout.fillWidth: true }
-            CustomDatePicker { id: endPicker; Layout.fillWidth: true }
+            TextField {
+                id: nameField
+                placeholderText: "Project name"
+                Layout.fillWidth: true
+                onTextChanged: isNameValid = text.trim().length > 0
+            }
+
+            ComboBox {
+                id: stateCombo
+                Layout.fillWidth: true
+                model: ["NotStated", "Backlog", "InProgress", "Waiting"]
+                currentIndex: 0
+            }
+            CustomDatePicker {
+                id: startDatePicker
+                Layout.fillWidth: true
+            }
+
+            CustomDatePicker {
+                id: endDatePicker
+                Layout.fillWidth: true
+            }
         }
 
         onAccepted: {
-            if (!nameField.text.trim()) return;
-            taskModel.createTask("", nameField.text, stateCombo.currentText, startPicker.selectedDate, endPicker.selectedDate);
-            taskModel.saveToFile("tasks.txt"); nameField.text = "";
+            isNameValid = nameField.text.trim().length > 0
+            isDateRangeValid = parseDate(startDatePicker.selectedDate) <= parseDate(endDatePicker.selectedDate)
+
+            if (!isNameValid || !isDateRangeValid) {
+                errorText.visible = true
+                return
+            }
+
+            taskModel.createTask(
+                "",
+                nameField.text.trim(),
+                stateCombo.currentText,
+                startDatePicker.selectedDate,
+                endDatePicker.selectedDate
+            )
+            taskModel.saveToFile()
+
+            nameField.text = ""
+            stateCombo.currentIndex = 0
+            startDatePicker.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+            endDatePicker.selectedDate = Qt.formatDate(new Date(), "dd.MM.yyyy")
+            errorText.visible = false
+
+            taskDialog.close()
         }
     }
 }

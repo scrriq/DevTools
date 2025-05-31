@@ -9,8 +9,8 @@ ApplicationWindow {
     width: 1024; height: 768
     title: "DevTools"
     Component.onCompleted: {
-        projectManager.loadFromFile("projects.txt")
-        taskManager.loadFromFile("tasks.txt")
+        projectManager.loadFromFile()
+        taskManager.loadFromFile()
     }
 
     Material.theme: Material.Dark

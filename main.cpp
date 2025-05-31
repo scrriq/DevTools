@@ -4,6 +4,7 @@
 #include "ProjectManager.h"
 #include "GradientModel.h"
 #include "TaskManager.h"
+#include "AuthManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,11 +15,13 @@ int main(int argc, char *argv[])
     TaskManager taskManager;
     GradientModel gradModel;
 
+
     QQmlApplicationEngine engine;
     qmlRegisterType<TaskManager>("DevTools", 1, 0, "TaskManager");
     qmlRegisterType<GradientModel>("App.Controls", 1, 0, "GradientModel");
     engine.rootContext()->setContextProperty("projectManager", &projectManager);
     engine.rootContext()->setContextProperty("GradientModel", &gradModel);
+    engine.rootContext()->setContextProperty("Auth", &AuthManager::instance());
     engine.rootContext()->setContextProperty("taskManager", &taskManager);
 
 
